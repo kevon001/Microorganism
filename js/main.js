@@ -1,12 +1,13 @@
 enchant();
 window.onload = function() {
-    var KumaNum = 3 ; //クマ数
+    var KumaNum = 20 ; //クマ数
     var kumaList =[] ;  //クマインスタンスを保存しておくリスト
+    var hitList =[] ;  //あたり判定用の
 
-    var game_ = new Game(320, 320); // 表示領域の大きさを設定
-    game_.fps = 24;                 // ゲームの進行スピードを設定
-    game_.preload('./img/chara1.png', './img/start.png', './img/gameover.png'); // ゲームに使う素材を、あらかじめ読み込む
-    game_.onload = function() { // ゲームの準備が整ったらメインの処理を実行します
+    var game = new Game(320, 320); // 表示領域の大きさを設定
+    game.fps = 24;                 // ゲームの進行スピードを設定
+    game.preload('./img/chara1.png', './img/start.png', './img/gameover.png'); // ゲームに使う素材を、あらかじめ読み込む
+    game.onload = function() { // ゲームの準備が整ったらメインの処理を実行します
         /**
          * タイトルシーン
          *
@@ -14,14 +15,15 @@ window.onload = function() {
          */
         var createStartScene = function() {
             var scene = new Scene();                                // 新しいシーンを作る
-            scene.backgroundColor = '#fcc800';                      // シーンの背景色を設定
+            // scene.backgroundColor = '#fcc800';                      // シーンの背景色を設定
+            scene.backgroundColor = '#fcc8f0';
             // スタート画像設定
-            var startImage = new Sprite(236, 48);                   // スプライトを作る
-            scene.addChild(startImage);                             // シーンに追加
+            // var startImage = new Sprite(236, 48);                   // スプライトを作る
+            scene.addChild(createGameScene());                             // シーンに追加
             // スタート画像にタッチイベントを設定
-            startImage.addEventListener(Event.TOUCH_START, function(e) {
-                game_.replaceScene(createGameScene());    // 現在表示しているシーンをゲームシーンに置き換える
-            });
+            // startImage.addEventListener(Event.TOUCH_START, function(e) {
+            //     game.replaceScene(creategamescene());    // 現在表示しているシーンをゲームシーンに置き換える
+            // });
             // タイトルシーンを返します。
             return scene;
         };
@@ -34,25 +36,59 @@ window.onload = function() {
         var createGameScene = function() {
             var scene = new Scene();                            // 新しいシーンを作る
             scene.backgroundColor = '#fcc8f0';
-
-            for(var i=0 ; i < KumaNum  ;i++){
-                kumaList.push(createKuma()) ;
+             
+            // var group = new Group() ;
+            for(var i=0 ; i < KumaNum ;i++){
+                var kuma = createKuma() ;
+                // group.addChild(kuma) ;
+                kumaList.push(kuma) ;
             }
 
             for(num in kumaList){
                 scene.addChild(kumaList[num]);                               // シーンに追加
+                scene.addChild(hitList[num]);                               // シーンに追加
             }
 
             // シーンに毎フレームイベントを設定
             scene.addEventListener(Event.ENTER_FRAME, function() {
+                kumasIntersect() ;
                 moveKumas() ;   //すべてのクマを動かす
                 isLimitObjectList() ;   //すべてのクマに位置により判定を行う
             });
+                
+                      
+            // scene.addChild(group)  ;
+
+            
 
             // addEventListenerToKumaList(kumaList) ;
             // くまにタッチイベントを設定する
             return scene;
         };
+
+
+
+
+        /**
+         * クマの衝突判定
+         */
+        function kumasIntersect(){
+            for(num in kumaList) {
+                for(num2 in kumaList) {
+                    if(num != num2){
+                        // if( kumaList[num].intersect(kumaList[num2])){
+                        //     kumaList[num].backgroundColor = "red"
+                        // }
+                        if( hitList[num].intersect(hitList[num2])){
+                            hitList[num].backgroundColor = "red"
+                            hitList[num].opacity = 0.3  // toumeido
+                        }
+
+                    }
+
+                }
+            }
+        }
 
         /**
          * クマにリスナーを加える
@@ -82,10 +118,18 @@ window.onload = function() {
          */
         function createKuma(){
             var kuma = new Sprite(32, 32);                      // スプライトを作る
-            kuma.image = game_.assets['./img/chara1.png'];      // くま画像を設定
+            kuma.image = game.assets['./img/chara1.png'];      // くま画像を設定
             kuma.x = Math.random() * 288;                       // くまの横位置を0～288pxの間でランダムに設定
             kuma.y = Math.random() * 288;                       // くまの縦位置を0～288pxの間でランダムに設定
+            // kuma.backgroundColor = "blue" ;
             var kumaSpeed = Math.random() * 8 - 4;              // くまのスピードを-4～+4の間でランダムに設定
+
+            //衝突判定用
+            var hitobj = new Sprite(10, 29); 
+            hitobj.x = Math.random() * 288;                       // くまの横位置を0～288pxの間でランダムに設定
+            hitobj.y = Math.random() * 288;                       // くまの縦位置を0～288pxの間でランダムに設定
+            hitList.push(hitobj) ;
+
             return kuma ;
         }
 
@@ -95,7 +139,26 @@ window.onload = function() {
          */
         function moveKumas(){
             for(num in kumaList) {
-                moveKuma(kumaList[num]) ;
+                moveKuma2(num) ;
+            }
+        }
+
+        /**
+         * クマを動かす。hitobjも同様に
+         */
+        function moveKuma2(num){
+            kuma = kumaList[num] ;
+            hitobj =  hitList[num] ;
+            kuma.x += ((Math.random() * 2) -1) * 2 ;
+            kuma.y += ((Math.random() * 2) -1) * 2 ;
+
+            hitobj.x = kuma.x +12 ;
+            hitobj.y = kuma.y ;
+            //以下でクマにアニメーションをつける
+            kuma.frame ++ ;
+            hitobj.frame ++ ;
+            if(kuma.frame > 2){
+                kuma.frame = 0 ; 
             }
         }
 
@@ -154,7 +217,7 @@ window.onload = function() {
             scene.backgroundColor = '#303030';                         // シーンの背景色を設定
             // ゲームオーバー画像設定
             var gameoverImage = new Sprite(189, 97);                   // スプライトを作る
-            gameoverImage.image = game_.assets['./img/gameover.png'];  // ゲームオーバー画像を設定
+            gameoverImage.image = game.assets['./img/gameover.png'];  // ゲームオーバー画像を設定
             gameoverImage.x = 65;                                      // 横位置調整
             gameoverImage.y = 112;                                     // 縦位置調整
             scene.addChild(gameoverImage);                             // シーンに追加
@@ -175,11 +238,11 @@ window.onload = function() {
             scene.addChild(retryLabel);                                // シーンに追加
             // リトライラベルにタッチイベントを設定
             retryLabel.addEventListener(Event.TOUCH_START, function(e) {
-                game_.replaceScene(createStartScene());    // 現在表示しているシーンをタイトルシーンに置き換える
+                game.replaceScene(createStartScene());    // 現在表示しているシーンをタイトルシーンに置き換える
             });
             return scene;
         };
-        game_.replaceScene(createStartScene());  // ゲームの_rootSceneをスタートシーンに置き換える
+        game.replaceScene(createStartScene());  // ゲームの_rootSceneをスタートシーンに置き換える
 }
-game_.start(); // ゲームをスタートさせます
+game.start(); // ゲームをスタートさせます
 };
