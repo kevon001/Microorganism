@@ -3,13 +3,15 @@ var agentNum = 0 ;
 var agentList = [] ;
 var game ;
 window.onload = function() {
-    game = new Game(320, 320);
+    // game = new Game(320, 320);
+    game = new Game(500, 500);
     game.fps = 15;
 
     // include('jsTkylib.js')
     game.preload('map0.gif','map1.gif', 'chara0.gif', 'mi.png', 'boru.png', 'midori.png');
     game.onload = function() {
         var map = new Map(16, 16);
+        // var map = new Map(32, 32);
 
 // varbackgroundMap=newExMap(16,16);
 map.image=game.assets['map0.gif'];
@@ -146,6 +148,7 @@ map.collisionData=[
             agentsIntersect(agentList, stage) ;
             game.rootScene.removeChild(agentNumLabel) ; 
             agentNumLabel = new Label(agentNum.toString(10)+"/"+allAgentNum.toString(10));
+            agentNumLabel.color = "white"
             game.rootScene.addChild(agentNumLabel);
             // for(var i = 0 ;i < 30 ;i++){
             // var x = Math.min((game.width  - 16) / 2 - agentList[i].x, 0);
