@@ -2,6 +2,8 @@ enchant();
 var agentNum = 0 ;
 var agentList = [] ;
 var game ;
+var map;
+var IniAgentNum=10 ;
 window.onload = function() {
     // game = new Game(320, 320);
     game = new Game(500, 500);
@@ -10,7 +12,7 @@ window.onload = function() {
     // include('jsTkylib.js')
     game.preload('map0.gif','map1.gif', 'chara0.gif', 'mi.png', 'boru.png', 'midori.png');
     game.onload = function() {
-        var map = new Map(16, 16);
+        map = new Map(16, 16);
         // var map = new Map(32, 32);
 
 // varbackgroundMap=newExMap(16,16);
@@ -116,8 +118,6 @@ map.collisionData=[
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 ];
-
-
         
         // var player3 = createAgent(game, map)  ;
         //画像を上から重ねていく
@@ -125,8 +125,8 @@ map.collisionData=[
         stage.addChild(map);
 
         // var agentList = [] ;
-        for(var i=0 ;i < 30;i++){
-            agentList[i]  = createAgent(game, map, i) ;
+        for(var i=0 ;i < IniAgentNum;i++){
+            agentList[i]  = createAgent(i, null) ;
             stage.addChild(agentList[i]);
         }
 
@@ -135,10 +135,11 @@ map.collisionData=[
         // stage.addChild(foregroundMap);
         game.rootScene.addChild(stage);
 
-        var pad = new Pad();
-        pad.x = 0;
-        pad.y = 220;
-        game.rootScene.addChild(pad);
+        // var pad = new Pad();
+        // pad.x = 0;
+        // pad.y = 220;
+        // game.rootScene.addChild(pad);
+        
         agentNum = agentList.length ;
         allAgentNum = agentList.length ;
         var agentNumLabel = new Label(agentNum.toString(10)+"/"+allAgentNum.toString(10));
@@ -169,16 +170,25 @@ map.collisionData=[
 /**
  * ランダムに動くエージェントの生成
  */
-function createAgent(game,map, num){
+function createAgent(num, name){
         var agent ;
-        if (num < 10){
-            agent = new Mizinko() ;
-        }else if (num < 20){
-            agent = new Midorimusi() ;
+        if (name != null){
+            if (name == "midorimusi"){
+                agent = new Midorimusi() ;
+            }else if(name == "boul"){
+                agent = new Boul() ;
+            }else{
+                agent = new Mizinko() ;
+            }
         }else{
-            agent = new Boul() ;
-        }
-            
+            if (num < IniAgentNum/2){
+                agent = new Boul() ;
+            }else if (num < (IniAgentNum-1)){
+                agent = new Midorimusi() ;
+            }else{
+                agent = new Mizinko() ;
+            }
+        } 
         // ran = Math.random() * 10 ;
         r_x = Math.random() * 20 ;
         r_x = Math.round(r_x) ;
@@ -276,17 +286,30 @@ function agentsIntersect(agentList, stage){
         for(num2 in agentList) {
             if(num != num2){
                 if( agentList[num].intersect(agentList[num2])){
-                    stage.removeChild(agentList[num]) ;
-                    agentList.splice(num, 1) ;
-                    agentNum = agentNum -1 ;
-                    // agentList[num] 
-                    // agentList[num].backgroundColor = "red"
-                    //     agentList[num].opacity = 0.3  // toumeido
-                }
+                    if (agentList[num].strength > agentList[num2].strength){
+                        stage.removeChild(agentList[num2]) ;
+                        agentList.splice(num2, 1) ;
+                        agentNum = agentNum -1 ;
+                    }else if(agentList[num].strength < agentList[num2].strength){
+                        stage.removeChild(agentList[num]) ;
+                        agentList.splice(num, 1) ;
+                        agentNum = agentNum -1 ;
+                    }else if(agentList[num].name == agentList[num2].name){   //同じやつ来たら新しいやつの生成
+                        i = Math.random() 
+                        if (i < 0.01){
+                            agent = createAgent(i, agentList[num].name) ;
+                            // console.log(agent.name)  ;
+                            agentList.push(agent) ;
+                            stage.addChild(agent) ;
+                            agentNum = agentNum +1 ;
+                                
+                        }
+                    }
             }
         }
     }
 }
+
 
 
 ////////////////////////////////////////////////////////////////////////
@@ -306,6 +329,7 @@ var Mizinko = enchant.Class.create(enchant.Sprite,{
         image.draw(game.assets['mi.png'], 0, 0, 96, 128, 0, 0, 96, 128);  //主人公の画像表示
         this.image = image ;
     }, 
+    name:"mizinko", 
     strength:3      //強さ
 } ) ;
 
@@ -318,9 +342,10 @@ var Midorimusi = enchant.Class.create(enchant.Sprite,{
         enchant.Sprite.call(this, 32, 32)  ;
 
         var image = new Surface(96, 128);
-        image.draw(game.assets['mi.png'], 0, 0, 96, 128, 0, 0, 96, 128);  //主人公の画像表示
+        image.draw(game.assets['midori.png'], 0, 0, 96, 128, 0, 0, 96, 128);  //主人公の画像表示
         this.image = image ;
     }, 
+    name:"midorimusi", 
     strength:2      //強さ
 } ) ;
 
@@ -334,6 +359,7 @@ var Boul = enchant.Class.create(enchant.Sprite,{
         image.draw(game.assets['boru.png'], 0, 0, 96, 128, 0, 0, 96, 128);  //主人公の画像表示
         this.image = image ;
     }, 
+    name:"boul", 
     strength:1      //強さ
 } ) ;
 
