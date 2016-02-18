@@ -3,7 +3,7 @@ var agentNum = 0 ;
 var agentList = [] ;
 var game ;
 var map;
-var IniAgentNum=10 ;
+var IniAgentNum=20 ;
 window.onload = function() {
     // game = new Game(320, 320);
     game = new Game(500, 500);
@@ -183,7 +183,7 @@ function createAgent(num, name){
     }else{
         if (num < IniAgentNum/2){
             agent = new Boul() ;
-        }else if (num < (IniAgentNum-1)){
+        }else if (num < (IniAgentNum-2)){
             agent = new Midorimusi() ;
         }else{
             agent = new Mizinko() ;
@@ -296,7 +296,8 @@ function agentsIntersect(agentList, stage){
                         agentNum = agentNum -1 ;
                     }else if(agentList[num].name == agentList[num2].name){   //同じやつ来たら新しいやつの生成
                         i = Math.random() 
-                            if (i < 0.01){
+                            if (agentList[num].name == "mizinko"){
+                            } else if (i < 0.01 && agentNum < 50){
                                 agent = createAgent(i, agentList[num].name) ;
                                 // console.log(agent.name)  ;
                                 agentList.push(agent) ;
